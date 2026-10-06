@@ -45,11 +45,13 @@ sys.path.insert(0, str(HERE))
 from db import connect                      # noqa: E402
 from sources import settings                # noqa: E402
 
-RESUME = ROOT / "resume"
+import person                               # noqa: E402
+
+RESUME = person.resume_dir(ROOT / "resume")
 STORIES_MD = RESUME / "STAR-STORIES.md"
 LINES_MD = RESUME / "INTERVIEW-LINES.md"
 TEMPLATE_MD = RESUME / "cover-letter-template.md"
-OUT_DIR = HERE / "kits"
+OUT_DIR = person.path(HERE / "kits", "kits")
 
 # What a JD word implies about which story to tell. The left side is matched
 # against the advert; the right side against each story's own `(use for: ...)`
@@ -740,7 +742,7 @@ def answers_for_labels_generic(fields: list[dict]) -> dict:
 def start_date_line() -> str:
     """From the canonical CV's Availability section, so the notice period has
     one home. Three files used to disagree about it."""
-    md = RESUME / "resume-ai-solutions-engineer.md"
+    md = RESUME / f"resume-{person.CV_SLUG if person.name() else 'ai-solutions-engineer'}.md"
     try:
         m = re.search(r"^## Availability\s*\n+(.+?)\s*(?:\n##|\Z)", md.read_text(), re.S | re.M)
     except OSError:

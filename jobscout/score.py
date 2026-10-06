@@ -111,6 +111,15 @@ SKILLS = [
 ]
 
 
+import person                               # noqa: E402
+
+_PROFILE = person.profile()
+if _PROFILE:
+    # Their skills, not the owner's, and none of the owner's CV variants.
+    SKILLS = [k.lower() for k in _PROFILE.get("skills") or []] or SKILLS
+    pick_variant = None
+
+
 def profile_fit(title: str, description: str) -> tuple[float, str]:
     """0.0 to 1.0. How much of his CV is relevant at all."""
     text = f"{title} {description}".lower()

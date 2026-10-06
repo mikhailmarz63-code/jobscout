@@ -16,7 +16,9 @@ from contextlib import contextmanager
 from pathlib import Path
 
 HERE = Path(__file__).parent
-DB = HERE / "jobscout.db"
+sys.path.insert(0, str(HERE))
+import person                               # noqa: E402
+DB = person.path(HERE / "jobscout.db", "jobscout.db")
 SCHEMA = HERE / "schema.sql"
 
 # Bump when a one-off data migration is added to `_ONE_OFFS`. Stored in the

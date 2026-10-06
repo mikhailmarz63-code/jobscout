@@ -24,7 +24,11 @@ import yaml
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
-SETTINGS = ROOT / "settings.yml"
+import sys                                  # noqa: E402
+sys.path.insert(0, str(ROOT))
+import person                               # noqa: E402
+
+SETTINGS = person.path(ROOT / "settings.yml", "settings.yml")
 if not SETTINGS.exists():           # fresh clone: run on the example until you copy it
     SETTINGS = ROOT / "settings.example.yml"
 

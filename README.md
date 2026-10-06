@@ -4,7 +4,7 @@ A personal job finder that reads thousands of remote job adverts every morning a
 
 On its first full pass it narrowed **2,078 jobs down to 79**.
 
-It is written in Python with SQLite, has **316 automated tests**, and runs on a laptop with no server and no paid APIs.
+It is written in Python with SQLite, has **329 automated tests**, and runs on a laptop with no server and no paid APIs.
 
 ## What it does
 
@@ -41,7 +41,7 @@ Each morning `run.py` walks a pipeline. Every stage is idempotent, so a run that
 pip install -r requirements.txt
 cd jobscout
 cp settings.example.yml settings.yml      # then fill in your own details
-python3 -m pytest -q                      # 316 passed, 17 skipped on a fresh clone
+python3 -m pytest -q                      # 329 passed, 17 skipped on a fresh clone
 python3 run.py                            # the daily pass
 python3 run.py --status                   # what state everything is in
 python3 ats.py --self                     # score the sample CV against six ATS platforms
@@ -50,10 +50,28 @@ python3 board.py --standalone             # local review board
 
 Put your own CV at `resume/resume-ai-solutions-engineer.md`. The one in the repo is a made up sample so everything runs on a fresh clone. The 17 skipped tests need your own `resume/STAR-STORIES.md` and `resume/INTERVIEW-LINES.md`.
 
+## Run it for anyone's CV
+
+Drop in a CV and jobscout sets up a separate search for that person: their own target roles, seniority, salary floor and timezone, and their own database, so nobody's shortlist mixes with anyone else's.
+
+```bash
+python3 people.py add path/to/cv.pdf --name sam --floor 800   # PDF, .docx, .md or .txt
+python3 people.py show sam                                    # check the profile first
+python3 run.py --person sam                                   # their daily pass
+python3 people.py list
+```
+
+`add` reads the CV and makes one `claude -p` call (the Claude Code CLI, on your own subscription) to build a profile: the job titles they could be hired for today, titles they could move into, professions to keep out, seniority, years of experience and skills. It is written to `people/<name>/profile.yml`. Read it before the first run, because the target titles decide what counts as their field. Without the CLI, `add` still creates the folder with an empty profile to fill in by hand.
+
+How it works: `person.py` is the one place that decides whose files a run uses. Setting `JOBSCOUT_PERSON` (which `run.py --person` does for you) moves the database, settings, CV and application packs into that person's folder, and swaps the owner's role and skill vocabulary for theirs. With no person set, nothing changes.
+
+Limits, stated plainly: the eligibility gate's region tables are written for candidates in Sri Lanka, so for anyone elsewhere the "which regions include them" check is rough, and `add` warns about it. Each person's first run downloads the job feeds again into their own database.
+
 ## Layout
 
 ```
 jobscout/            the pipeline, tools, board, extension and tests
+people/              one folder per person added with people.py (gitignored)
 resume/              the CV the tools read (sample included)
 job-applications/    matcher.py, shared CV variant matching
 ```

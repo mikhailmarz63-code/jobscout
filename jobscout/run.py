@@ -15,6 +15,7 @@ rather than starting again from the top.
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -24,6 +25,7 @@ from pathlib import Path
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 
+import person                                       # noqa: E402
 from db import connect, maintain, now, session      # noqa: E402
 
 PLIST = Path.home() / "Library/LaunchAgents/com.jobscout.daily.plist"
@@ -176,9 +178,19 @@ def main(argv: list[str]) -> int:
     # J3: evidence-quoted fit scoring. Never part of the plain daily run --
     # it spends your Claude subscription usage on the top of the day's list, so it
     # only runs when explicitly asked for, here or by flipping judge.enabled.
+    ap.add_argument("--person", metavar="NAME",
+                    help="run for someone added with people.py (their folder, their database)")
     ap.add_argument("--judge", action="store_true",
                     help="also run judge.py after the daily pass")
     args = ap.parse_args(argv)
+
+    # The database path is fixed when db.py is imported, which has already
+    # happened. So switching person means starting this process again with the
+    # variable set: every path, here and in every child stage, then agrees.
+    if args.person and person.name() != args.person:
+        os.environ[person.ENV] = args.person
+        person.home()                       # a clear message if they don't exist
+        os.execv(sys.executable, [sys.executable, str(Path(__file__).resolve()), *argv])
 
     if args.status:
         status()

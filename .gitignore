@@ -1,0 +1,4 @@
+# Everyone added with people.py: their CV, profile, settings and database.
+people/
+.DS_Store
+__pycache__/

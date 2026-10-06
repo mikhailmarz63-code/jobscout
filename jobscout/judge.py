@@ -46,6 +46,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "job-applications"))
 
 from db import connect, job_description, log_stage, now      # noqa: E402
+import person                                                 # noqa: E402
 from sources import settings                                  # noqa: E402
 
 try:
@@ -116,6 +117,8 @@ def cv_text_and_hash(title: str, description: str) -> tuple[str, str, str]:
             pass
     rel = RESUME_SOURCE_MD.get(variant, "resume/resume-ai-solutions-engineer.md")
     path = ROOT / rel
+    if person.name():                       # their CV, never the owner's variants
+        variant, path = person.CV_SLUG, person.resume_dir(ROOT / "resume") / f"resume-{person.CV_SLUG}.md"
     try:
         text = path.read_text()
     except OSError:

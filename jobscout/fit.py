@@ -362,6 +362,23 @@ MANAGES_TEAM = re.compile(
 # against a general idea of seniority.
 YEARS_NO_CHANCE = 5
 YEARS_STRETCH = 3
+YEARS_HAVE = 1.5
+SENIORITY = "junior"
+
+# Running for someone else: their profile replaces the owner's vocabulary.
+# Everything above stays the default, so the owner's run is unchanged.
+import person                               # noqa: E402
+_PROFILE = person.profile()
+if _PROFILE:
+    HIS_FAMILY = person.title_regex(_PROFILE.get("target_titles")) or HIS_FAMILY
+    ADJACENT_FAMILY = person.title_regex(_PROFILE.get("adjacent_titles")) or person.NEVER
+    OFF_FAMILY = person.title_regex(_PROFILE.get("avoid_titles")) or OFF_FAMILY
+    MOVING_INTO = person.title_regex(_PROFILE.get("moving_into")) or person.NEVER
+    YEARS_HAVE = float(_PROFILE.get("years_experience") or YEARS_HAVE)
+    SENIORITY = str(_PROFILE.get("seniority") or SENIORITY).lower()
+    # The thresholds keep the same distance from what they have.
+    YEARS_STRETCH = YEARS_HAVE + 1.5
+    YEARS_NO_CHANCE = YEARS_HAVE + 3.5
 
 REACH_ORDER = ["likely", "plausible", "stretch", "no_chance"]
 
@@ -446,6 +463,8 @@ def reach(title: str, description: str) -> tuple[str, str]:
 
     # 4. A soft marker with nothing junior in front of it means people or a P&L.
     soft = SOFT_SENIOR_TITLE.search(title)
+    if soft and SENIORITY in ("mid", "senior"):
+        return "plausible", f"'{soft.group(0).strip()}' at a {SENIORITY} level"
     if soft:
         return "no_chance", f"'{soft.group(0).strip()}' with no junior qualifier"
 
@@ -455,14 +474,18 @@ def reach(title: str, description: str) -> tuple[str, str]:
         # a years figure used to silently overrule it.
         if years and years >= YEARS_NO_CHANCE:
             return "no_chance", f"'{stretch.group(0)}' and asks for {years}+ years"
+        if SENIORITY == "senior":
+            return "likely", f"'{stretch.group(0)}' title, their level"
+        if SENIORITY == "mid":
+            return "plausible", f"'{stretch.group(0)}' title, one step up"
         return "stretch", f"'{stretch.group(0)}' title"
 
     # 5. Only now does the body get a say on its own.
     if years:
         if years >= YEARS_NO_CHANCE:
-            return "no_chance", f"asks for {years}+ years; he has about 1.5"
+            return "no_chance", f"asks for {years}+ years; he has about {YEARS_HAVE:g}"
         if years >= YEARS_STRETCH:
-            return "stretch", f"asks for {years}+ years; he has about 1.5"
+            return "stretch", f"asks for {years}+ years; he has about {YEARS_HAVE:g}"
         return "likely", f"asks for {years} years"
 
     if MID_TITLE.search(title):

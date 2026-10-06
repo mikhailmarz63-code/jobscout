@@ -34,9 +34,12 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
-RESUME = ROOT / "resume"
-OUT = ROOT / "out"
-CANONICAL = "ai-solutions-engineer"
+sys.path.insert(0, str(HERE))
+import person                               # noqa: E402
+
+RESUME = person.resume_dir(ROOT / "resume")
+OUT = person.path(ROOT / "out", "out")
+CANONICAL = person.CV_SLUG if person.name() else "ai-solutions-engineer"
 
 # Files a fact may be taken from. COWORK-PROMPT.md lists the same set.
 INJECTABLE_FILES = ["STAR-STORIES.md", "INTERVIEW-LINES.md", "INTERVIEW-DEFENCE.md"]
