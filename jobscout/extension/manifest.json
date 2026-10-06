@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "jobscout helper",
+  "version": "0.1.0",
+  "description": "Reads the application form in front of you and offers the answers jobscout already prepared. Copies and fills. Never submits.",
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8790/*",
+    "http://localhost:8790/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "jobscout \u2014 open the helper"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://job-boards.greenhouse.io/*",
+        "https://boards.greenhouse.io/*",
+        "https://*.greenhouse.io/*",
+        "https://jobs.ashbyhq.com/*",
+        "https://jobs.lever.co/*",
+        "https://apply.workable.com/*",
+        "https://jobs.smartrecruiters.com/*",
+        "https://*.myworkdayjobs.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {},
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsaomiY9Y+mCLMYuF3Dc7UBayGDZGYqkRECIb36hZn+Kpl03gMgoIRYnkBDYxohtOYD9rJq9z1dbgg/7BBznaMshWqm4qXLi90mMU2FzwuTIZI2HHQvQzGvL4+nvxMBU/1S/s5JSdOAINtO3nVPzRq/xdouusjAh7kom0nJOABqMctjZ9xbbNOKXuJ1tb6gbe2vjQszefyG6G1FQz2onFNGApgISA3ssAaI2IUrZKoyjioRs9pZHLUSxqisjUhOFKPqGLMfqN83jjsm7GZtoJV/5iotGlwjcsPBBjA9QEs/eel0jP2r7kB0xgSS4wfRr+MkG+AP1moDislfB9bq1HHwIDAQAB"
+}

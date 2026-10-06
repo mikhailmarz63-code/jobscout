@@ -1,0 +1,123 @@
+# Everything that is the candidate's rather than the system's.
+# Copy to settings.yml and fill in. settings.yml is gitignored.
+
+candidate:
+  name: "Alex Example"
+  email: "alex@example.com"
+  phone: "+94 77 000 0000"
+  linkedin: "https://www.linkedin.com/in/example/"
+  country: "LK"            # ISO 3166-1 alpha-2 -- drives the eligibility gate
+  city: "Colombo"
+  utc_offset: 5.5          # Colombo. Fractional, and the maths must survive it.
+
+# The floor applies to KNOWN salaries only. Jobs that publish no number are not
+# discarded -- a large share of the best-paying roles publish nothing, and a
+# filter that drops them quietly removes the top of the market.
+pay:
+  floor_usd_month: 2000
+  currency_display: USD
+  # LKR is only ever for reading the number in local terms. Never a filter.
+  lkr_per_usd_hint: 300
+
+# A workable day in Colombo, local hours. Overlap with the job's required hours
+# is scored, not just drawn: a job that pays well and needs you awake at 3am is
+# not a good job.
+hours:
+  workday_start: 9
+  workday_end: 18
+  green_min_overlap: 4     # hours of overlap for a green band
+  amber_min_overlap: 2
+
+# Which eligibility states are worth surfacing at all. ONSITE_NO_SPONSOR and
+# BLOCKED are never surfaced as opportunities; UNKNOWN goes to review.
+eligibility:
+  surface:
+    - OPEN_WORLDWIDE
+    - OPEN_REGION
+    - OPEN_CONTRACTOR
+    - ONSITE_LK
+    - ONSITE_SPONSORED
+    - UNKNOWN
+
+# Phase 3/4. Every one of these is a gate, and all of them must pass.
+dispatch:
+  enabled: false           # the kill switch. Stays false until a dry-run day is read.
+  dry_run: true            # default, and the only safe default
+  min_score: 75            # deliberately high
+  daily_cap: 5
+  hold_minutes: 30         # visible on the board and cancellable before it leaves
+  company_cooldown_days: 90
+  # Auto-send only works where a real application email exists. Portal
+  # applications are prepared and handed over as one click each -- automating
+  # an ATS portal breaks its terms and gets accounts flagged.
+  lanes: [email]
+
+# Both Himalayas and Remotive cap a response at 20 rows and ignore `limit`
+# (verified 2026-08-24). Himalayas pages properly by cursor, so volume is the
+# page count below. Remotive ignores *every* parameter and serves the same
+# twenty newest jobs to any query, so it contributes twenty a day and there is
+# no dial. Feeds are newest-first, which makes a bounded page count mean "the
+# last day or two" -- exactly what a daily run wants.
+sources:
+  # 250 pages x 20 rows = ~5,000 a run, and the cursor resumes, so a week of
+  # runs walks ~35,000 of the ~103,000 feed rather than re-reading the newest
+  # 600 every morning. Costs ~4 minutes inside the run.
+  himalayas:   {enabled: true,  pages: 250}
+  remotive:    {enabled: true}                # fixed 20/run; see the module
+  remoteok:    {enabled: true}
+  jobicy:      {enabled: true}
+  arbeitnow:   {enabled: true,  pages: 3}
+  weworkremotely: {enabled: true}
+  hackernews:  {enabled: true}
+  # Boards rotate rather than all being read daily: 248 of them with full job
+  # content cost 456s, and the count only grows. A company's board barely
+  # changes overnight, so this cycles through them every few days.
+  ats:         {enabled: true, boards_per_run: 80}
+  # J2: open-jobs (CC0, github.com/elliottdehn/open-jobs), a public index of
+  # ~2M postings from ~65,000 company boards. Off until a dry run is read: it
+  # is the only source that sends anything off the Mac -- one "ideal job"
+  # description, built from the lines below, embedded against their index.
+  # Never the CV, never his name/email/phone.
+  openjobs:
+    enabled: false
+    top_groups: 8           # nearest leaf groups to fetch, by cosine to the ideal JD
+    title: "AI Solutions Engineer"
+    must_haves:
+      - "Python, TypeScript/JavaScript, SQL"
+      - "building automations and integrations: APIs, workflow tools, n8n"
+      - "working with LLMs: prompting, RAG, agent tooling"
+    nice_to_haves:
+      - "ASP.NET / .NET back-end experience"
+      - "ERP, logistics or supply-chain domain knowledge"
+    # The /status sweep: is a shortlisted job's own ATS posting still live,
+    # per open-jobs' crawler. Same host, same "off until read" default.
+    status_sweep:
+      enabled: false
+      top_n: 150             # shortlisted jobs (by score) to check
+      max_keys: 1000         # the endpoint's own per-call ceiling
+      max_boards: 150        # the endpoint's own per-call ceiling
+
+# J3: evidence-quoted fit scoring via `claude -p` (the CLI, on the
+# subscription -- never the API/SDK, never a key). Off until you turn it
+# on: it spends your subscription budget, so it is a separate `run.py --judge` stage,
+# never part of the default daily run.
+judge:
+  enabled: false
+  daily_cap: 20
+  model: sonnet
+
+http:
+  # Deliberately anonymous. This string is sent to all eight job boards, every
+  # ATS, GeoNames and the FX API on every request.
+  #
+  # It used to carry an email address, on the polite-crawler convention that a
+  # bot should say who it is. That convention is for bots hitting servers at
+  # scale; here it hands every job board a stable identifier that ties the
+  # scraping to a later application. A board that wanted to could correlate the
+  # two, and so could anyone who buys their logs.
+  #
+  # The volume is a few hundred requests a day against public endpoints. Nobody
+  # needs to reach the owner about it.
+  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) jobscout/0.1"
+  timeout: 30
+  politeness_seconds: 1.0

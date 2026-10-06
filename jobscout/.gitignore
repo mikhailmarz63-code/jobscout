@@ -1,0 +1,35 @@
+# The database holds job adverts, company names and, from Hacker News, real
+# application email addresses. It stays local.
+jobscout.db
+jobscout.db-wal
+jobscout.db-shm
+backups/
+run.log
+__pycache__/
+*.pyc
+
+# The board's bearer token. Anyone holding this reads the whole database.
+.board-token
+
+# settings.yml carries the candidate's name, phone number, email and LinkedIn. The file is
+# configuration, but it is also PII, and this repo has a remote.
+settings.yml
+
+# Generated application packs quote the CV and name the companies applied to.
+kits/
+
+
+# The self-signed certificate and its private key, generated for --lan.
+.board-cert.pem
+.board-key.pem
+.board-extension
+.helper-key.pem
+
+# sources/openjobs.py's cache: the embedded "ideal job" vector (built from
+# settings.yml, never the CV) and the leaf-group files fetched against it.
+# Rebuildable; carries no CV text and no personal data, but no reason to churn
+# the repo with it either.
+.openjobs-cache/
+
+.DS_Store
+.pytest_cache/

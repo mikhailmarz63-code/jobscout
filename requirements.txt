@@ -1,0 +1,4 @@
+requests
+pyyaml
+pypdf
+pdfminer.six

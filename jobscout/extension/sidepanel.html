@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>jobscout helper</title>
+<link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+<header>
+  <div class="brand">jobscout</div>
+  <div class="hdr-actions">
+    <button id="rescan" title="Rescan the page">rescan</button>
+    <button id="settings" title="Settings">⚙</button>
+  </div>
+</header>
+<div id="status" class="status" hidden></div>
+<section id="lookup" class="lookup">
+  <input id="lookupInput" type="text" placeholder="paste a job URL, or its id" autocomplete="off">
+  <button id="lookupBtn">Load</button>
+</section>
+<section id="job" class="job"></section>
+<section id="blockers"></section>
+<section id="kit" class="kit" hidden></section>
+<section id="fields" class="fields"></section>
+<footer id="foot" hidden>
+  <button id="fill-safe">Fill all safe</button>
+  <button id="mark" class="primary">Mark applied</button>
+</footer>
+<script src="match.js"></script>
+<script src="sidepanel.js"></script>
+</body>
+</html>

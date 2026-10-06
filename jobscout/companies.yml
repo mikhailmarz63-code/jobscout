@@ -1,0 +1,26 @@
+# The register: company job boards, read straight from the ATS.
+#
+# Every slug below was probed on 2026-08-24 and returned jobs. A slug that
+# returns 200 with an empty array is not a working entry -- it is a company that
+# has moved ATS, or the wrong slug -- so `--check` prints EMPTY against it rather
+# than letting it sit here looking fine.
+#
+#     python3 -m sources.ats --check          # re-verify every slug
+#     python3 -m sources.ats --discover 40    # find boards for companies already seen
+#
+# Grow this list from --discover output, not from guesses. It is the layer that
+# finds a good job before it reaches an aggregator, so it is worth extending
+# every few weeks.
+
+companies:
+  # verified 2026-08-24
+  - {name: "GitLab",   ats: greenhouse, slug: gitlab,  remote_first: true}   # 203 jobs
+  - {name: "Mozilla",  ats: greenhouse, slug: mozilla, remote_first: true}   #  82 jobs
+  - {name: "Ramp",     ats: ashby,      slug: ramp,    remote_first: false}  # 136 jobs
+  - {name: "Replit",   ats: ashby,      slug: replit,  remote_first: true}   #  71 jobs
+  - {name: "Linear",   ats: ashby,      slug: linear,  remote_first: true}   #  32 jobs
+  - {name: "PostHog",  ats: ashby,      slug: posthog, remote_first: true}   #  11 jobs
+
+  # Probed 2026-08-24 and answered, but with nothing open. Kept because an empty
+  # board today is a live board next month, and the call costs nothing.
+  - {name: "Plaid",    ats: lever,      slug: plaid,   remote_first: false}

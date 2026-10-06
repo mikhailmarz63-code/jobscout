@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>jobscout</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="brand">jobscout</div>
+  <nav id="tabs" role="tablist" aria-label="Views">
+    <button role="tab" id="tab-today" data-view="today" aria-selected="true" aria-controls="view-today">Today</button>
+    <button role="tab" id="tab-jobs" data-view="jobs" aria-selected="false" aria-controls="view-jobs">Jobs</button>
+    <button role="tab" id="tab-map" data-view="map" aria-selected="false" aria-controls="view-jobs">Map</button>
+    <button role="tab" id="tab-applied" data-view="applied" aria-selected="false" aria-controls="view-applied">Applied</button>
+    <button role="tab" id="tab-questions" data-view="questions" aria-selected="false" aria-controls="view-questions">Questions</button>
+    <button role="tab" id="tab-cv" data-view="cv" aria-selected="false" aria-controls="view-cv">CV</button>
+    <button role="tab" id="tab-stats" data-view="stats" aria-selected="false" aria-controls="view-stats">Analytics</button>
+  </nav>
+  <div class="summary" id="summary" aria-live="polite" aria-label="Headline numbers">
+    <span class="stat"><b class="num skel">–</b><span>worth applying</span></span>
+    <span class="stat"><b class="num skel">–</b><span>at your level</span></span>
+    <span class="stat"><b class="num skel">–</b><span>new today</span></span>
+    <span class="stat" id="stat-chase" hidden><b class="num warn">–</b><span>to chase</span></span>
+  </div>
+  <div class="topright">
+    <button id="theme" class="icon" aria-label="Toggle light and dark" title="Theme">◐</button>
+    <button id="help" class="icon" aria-label="Keyboard shortcuts" title="Shortcuts (?)">?</button>
+  </div>
+</header>
+
+<div id="banner" class="banner" role="status" hidden></div>
+
+<main id="main">
+
+  <section id="view-today" class="view on" role="tabpanel" aria-labelledby="tab-today">
+    <div class="listhead"><h2>Tonight, in order</h2><span class="hint" id="today-note"></span></div>
+    <div class="cards" id="today-top"></div>
+    <div class="listhead"><h2>Then</h2><span class="count" id="today-count"></span></div>
+    <div class="rows" id="today-rows" aria-label="Ranked jobs"></div>
+  </section>
+
+  <section id="view-jobs" class="view" role="tabpanel" aria-labelledby="tab-jobs">
+    <div class="toolbar" role="search">
+      <input id="q" type="search" placeholder="Search title or company" aria-label="Search title or company" autocomplete="off">
+      <select id="f-state" aria-label="Eligibility">
+        <option value="">Open to you</option>
+        <option value="sendable">Sendable</option>
+        <option value="review">Needs a read</option>
+        <option value="OPEN_WORLDWIDE">Worldwide</option>
+        <option value="OPEN_REGION">Region</option>
+        <option value="OPEN_CONTRACTOR">Contractor</option>
+        <option value="ONSITE_LK">Sri Lanka</option>
+        <option value="ONSITE_SPONSORED">Sponsored</option>
+      </select>
+      <select id="f-reach" aria-label="Seniority reach">
+        <option value="">Any level</option>
+        <option value="likely">Your level</option>
+        <option value="plausible">Reachable</option>
+        <option value="stretch">A stretch</option>
+      </select>
+      <select id="f-band" aria-label="Timezone band">
+        <option value="">Any hours</option>
+        <option value="green">4h+ overlap</option>
+        <option value="amber">2–4h</option>
+        <option value="red">Night shift</option>
+      </select>
+      <select id="f-sort" aria-label="Sort">
+        <option value="score">By score</option>
+        <option value="pay">By pay</option>
+        <option value="age">Newest</option>
+        <option value="overlap">By overlap</option>
+      </select>
+      <div class="seg" role="group" aria-label="Mode">
+        <button data-mode="list" class="on" aria-pressed="true">List</button>
+        <button data-mode="map" aria-pressed="false">Map</button>
+      </div>
+      <label class="ghosttoggle"><input type="checkbox" id="f-ghost"> Show ghosts</label>
+      <span class="count" id="jobs-count"></span>
+      <button id="clear" class="ghost" hidden>Clear</button>
+    </div>
+
+    <div id="bulkbar" class="bulkbar" hidden>
+      <span id="bulk-n">0 selected</span>
+      <span class="hint">settle as</span>
+      <button data-set="OPEN_WORLDWIDE">Open to anyone <kbd>1</kbd></button>
+      <button data-set="OPEN_REGION">Open to Sri Lanka <kbd>2</kbd></button>
+      <button data-set="OPEN_CONTRACTOR">Contractor <kbd>3</kbd></button>
+      <button data-set="BLOCKED" class="no">Closed to me <kbd>0</kbd></button>
+      <button id="bulk-clear" class="ghost">Deselect</button>
+    </div>
+
+    <div id="mapwrap" hidden>
+      <div class="maptabs seg" role="group" aria-label="Map layer">
+        <button data-layer="timezone" class="on" aria-pressed="true">Timezone fit</button>
+        <button data-layer="pins" aria-pressed="false">Where they are</button>
+        <button data-layer="hires" aria-pressed="false">Hires from here</button>
+        <button data-layer="salary" aria-pressed="false">Salary heat</button>
+      </div>
+      <p id="mapcaption" class="caption"></p>
+      <svg id="world" viewBox="0 0 1000 500" role="group" aria-label="World map, one shape per country; press Enter on a country to filter"></svg>
+      <div id="legend" class="legend"></div>
+    </div>
+
+    <div class="chips" id="chips"></div>
+    <div class="rows" id="jobs-rows" aria-label="Jobs"></div>
+    <div class="more"><button id="more" hidden>Load more</button></div>
+  </section>
+
+  <section id="view-applied" class="view" role="tabpanel" aria-labelledby="tab-applied">
+    <div id="applied-body"></div>
+  </section>
+
+  <section id="view-questions" class="view" role="tabpanel" aria-labelledby="tab-questions">
+    <div id="questions-body"></div>
+  </section>
+
+  <section id="view-cv" class="view" role="tabpanel" aria-labelledby="tab-cv">
+    <div class="toolbar cvbar">
+      <select id="cv-variant" aria-label="CV variant"></select>
+      <input id="cv-job" type="number" min="1" placeholder="job id" aria-label="Job id to score against">
+      <button id="cv-score">Score</button>
+      <button id="cv-save" class="primary">Save</button>
+      <button id="cv-render">Render PDF</button>
+      <span id="cv-status" class="hint" aria-live="polite"></span>
+    </div>
+    <div class="cvsplit">
+      <div class="cvleft">
+        <textarea id="cv-md" spellcheck="false" aria-label="CV markdown"></textarea>
+        <div class="cvfoot"><span id="cv-count" class="hint"></span><span id="cv-budget" class="hint"></span></div>
+      </div>
+      <div class="cvright">
+        <div class="seg cvtabs" role="tablist" aria-label="CV panes">
+          <button role="tab" data-cvtab="platforms" class="on" aria-selected="true">6 platforms</button>
+          <button role="tab" data-cvtab="edits" aria-selected="false">Edits</button>
+          <button role="tab" data-cvtab="lint" aria-selected="false">Lint</button>
+          <button role="tab" data-cvtab="ats" aria-selected="false">ATS view</button>
+          <button role="tab" data-cvtab="pdf" aria-selected="false">PDF</button>
+        </div>
+        <div id="cv-platforms" class="cvpane on" role="tabpanel"></div>
+        <div id="cv-edits" class="cvpane" role="tabpanel"></div>
+        <div id="cv-lint" class="cvpane" role="tabpanel"></div>
+        <pre id="cv-ats" class="cvpane atsview" role="tabpanel"></pre>
+        <div id="cv-pdf" class="cvpane" role="tabpanel"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-stats" class="view" role="tabpanel" aria-labelledby="tab-stats">
+    <div id="stats-body"></div>
+  </section>
+
+</main>
+
+<dialog id="panel" aria-labelledby="panel-title">
+  <div class="panelhead">
+    <div><h2 id="panel-title"></h2><div class="co" id="panel-co"></div></div>
+    <button id="panel-close" class="icon" aria-label="Close">×</button>
+  </div>
+  <div id="panel-body" class="panelbody"></div>
+</dialog>
+
+<dialog id="helpdlg" aria-labelledby="help-title">
+  <div class="panelhead"><h2 id="help-title">Keys</h2><button id="help-close" class="icon" aria-label="Close">×</button></div>
+  <div class="panelbody keys">
+    <p><kbd>/</kbd> search · <kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>Esc</kbd> close</p>
+    <p><kbd>a</kbd> mark the focused job applied (portal) · <kbd>x</kbd> select for bulk review</p>
+    <p><kbd>1</kbd> open to anyone · <kbd>2</kbd> open to Sri Lanka · <kbd>3</kbd> contractor · <kbd>0</kbd> closed — on the focused or selected review jobs</p>
+    <p><kbd>g</kbd> then <kbd>t</kbd> <kbd>j</kbd> <kbd>m</kbd> <kbd>p</kbd> <kbd>c</kbd> <kbd>s</kbd> — go to Today, Jobs, Map, aPplied, CV, Stats</p>
+    <h4>Colours</h4>
+    <p><span class="chip green">4h+ overlap</span> a normal day · <span class="chip amber">2–4h</span> early or late · <span class="chip red">under 2h</span> a night shift</p>
+    <p><span class="chip good">your level</span> junior, graduate, associate · <span class="chip good">reachable</span> mid, no marker · <span class="chip warn">a stretch</span> senior · <span class="chip bad">no chance</span> staff and up</p>
+    <p><span class="chip">Worldwide</span> <span class="chip">Region OK</span> <span class="chip">Contractor</span> <span class="chip">Sponsored</span> <span class="chip">Sri Lanka</span> — the five states an application may go out under · <span class="chip warn">Needs a read</span> the rules could not decide</p>
+    <p>Score is 0–100 across eligibility 30 · hours 20 · profession ±20 · profile 15 · seniority ±15 · pay 20 · freshness 10.</p>
+    <p>ATS numbers on the CV tab are heuristics ported from an open-source screener. Greenhouse and Lever do not auto-score at all.</p>
+  </div>
+</dialog>
+
+<div id="live" class="sr-only" aria-live="polite"></div>
+</body>
+</html>
